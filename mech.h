@@ -7,11 +7,11 @@
 #define MAX_STAN 30
 
 typedef struct {
-    char model[MAX_MODEL];      // unikalny identyfikator
+    char model[MAX_MODEL];      // identyfikator – niezmienialny
     char klasa[MAX_KLASA];
-    int moc_reaktora;            // <100
-    char pilot[MAX_PILOT];       // mo¿e byæ pusty
-    char stan[MAX_STAN];         // sprawny/uszkodzony/w naprawie/demonta¿
+    int moc_reaktora;            // 0–99
+    char pilot[MAX_PILOT];       // opcjonalny
+    char stan[MAX_STAN];
 } Mech;
 
 #endif
