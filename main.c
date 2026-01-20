@@ -70,4 +70,3 @@ int main(int argc, char *argv[]) {
     freeDatabase(&db);
     return 0;
 }
-
