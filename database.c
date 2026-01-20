@@ -20,63 +20,77 @@ static void ensureCapacity(Database *db) {
     }
 }
 
+/* =========================
+   DODAWANIE – BEZ BLOKADY
+   ========================= */
 int addMech(Database *db, Mech m) {
-    if (findByModel(db, m.model)) {
-        return 0; // duplikat
-    }
     ensureCapacity(db);
     db->data[db->size++] = m;
     return 1;
 }
 
-Mech* findByModel(Database *db, const char *model) {
-    for (int i = 0; i < db->size; i++) {
-        if (strcmp(db->data[i].model, model) == 0)
-            return &db->data[i];
+/* =========================
+   USUWANIE PO INDEKSIE
+   tylko gdy stan = demontaz
+   ========================= */
+int removeMechByIndex(Database *db, int index) {
+    if (index < 0 || index >= db->size) {
+        printf("Nieprawidlowy numer mecha.\n");
+        return 0;
     }
-    return NULL;
+
+    if (strcmp(db->data[index].stan, "demontaz") != 0) {
+        printf("Nie mozna usunac – stan != demontaz\n");
+        return 0;
+    }
+
+    db->data[index] = db->data[--db->size];
+    return 1;
 }
 
-int removeMech(Database *db, const char *model) {
-    for (int i = 0; i < db->size; i++) {
-        if (strcmp(db->data[i].model, model) == 0) {
-            if (strcmp(db->data[i].stan, "demontaz") != 0) {
-                printf("Nie mozna usunac – mech nie jest w stanie demontazu!\n");
-                return 0;
-            }
-            db->data[i] = db->data[--db->size];
-            return 1;
-        }
-    }
-    return 0;
-}
-
+/* =========================
+   LISTA MECHOW Z NUMERAMI
+   ========================= */
 void listMechs(Database *db) {
+    printf("\n--- LISTA MECHOW ---\n");
+
+    if (db->size == 0) {
+        printf("(brak mechow w bazie)\n");
+        return;
+    }
+
     for (int i = 0; i < db->size; i++) {
         Mech *m = &db->data[i];
-        printf("%s | %s | %d MW | Pilot: %s | Stan: %s\n",
-               m->model, m->klasa, m->moc_reaktora,
+        printf("[%d] %s | %s | %d | Pilot: %s | Stan: %s\n",
+               i,
+               m->model,
+               m->klasa,
+               m->moc_reaktora,
                strlen(m->pilot) ? m->pilot : "brak",
                m->stan);
     }
 }
 
-void searchByClass(Database *db, const char *prefix) {
-    for (int i = 0; i < db->size; i++) {
-        if (strncmp(db->data[i].klasa, prefix, strlen(prefix)) == 0) {
-            printf("%s (%s)\n", db->data[i].model, db->data[i].klasa);
-        }
-    }
+/* =========================
+   WYSZUKIWANIE
+   ========================= */
+void searchByClass(Database *db, const char *klasa) {
+    for (int i = 0; i < db->size; i++)
+        if (strcmp(db->data[i].klasa, klasa) == 0)
+            printf("%s\n", db->data[i].model);
 }
 
 void searchByPower(Database *db, int minPower) {
-    for (int i = 0; i < db->size; i++) {
-        if (db->data[i].moc_reaktora >= minPower) {
-            printf("%s (%d MW)\n", db->data[i].model, db->data[i].moc_reaktora);
-        }
-    }
+    for (int i = 0; i < db->size; i++)
+        if (db->data[i].moc_reaktora >= minPower)
+            printf("%s (%d)\n",
+                   db->data[i].model,
+                   db->data[i].moc_reaktora);
 }
 
+/* =========================
+   SORTOWANIE
+   ========================= */
 static int cmpModel(const void *a, const void *b) {
     return strcmp(((Mech*)a)->model, ((Mech*)b)->model);
 }
@@ -92,4 +106,3 @@ void sortByModel(Database *db) {
 void sortByPower(Database *db) {
     qsort(db->data, db->size, sizeof(Mech), cmpPower);
 }
-
