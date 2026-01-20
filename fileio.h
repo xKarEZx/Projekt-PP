@@ -7,4 +7,3 @@ int saveToFile(Database *db, const char *filename);
 int loadFromFile(Database *db, const char *filename);
 
 #endif
-
